@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Create OAuth Client</title>
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: sans-serif;
+    }
+
+    body {
+      background: #f4f4f4;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 420px;
+      background: white;
+      padding: 35px;
+      border-radius: 14px;
+      box-shadow: 0 5px 25px rgba(0, 0, 0, 0.08);
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 25px;
+      color: #222;
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    input,
+    select {
+      padding: 14px;
+      border: 1px solid #dcdcdc;
+      border-radius: 8px;
+      font-size: 15px;
+      outline: none;
+    }
+
+    input:focus,
+    select:focus {
+      border-color: #111;
+    }
+
+    button {
+      padding: 14px;
+      border: none;
+      border-radius: 8px;
+      background: #111;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    button:hover {
+      background: #333;
+    }
+
+    .error {
+      background: #ffe5e5;
+      color: #d10000;
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 14px;
+      text-align: center;
+      display: none;
+    }
+
+    .success-box {
+      margin-top: 20px;
+      background: #f7f7f7;
+      border: 1px solid #ddd;
+      padding: 18px;
+      border-radius: 10px;
+      display: none;
+    }
+
+    .success-box h3 {
+      margin-bottom: 12px;
+      color: #111;
+    }
+
+    .credential {
+      margin-bottom: 14px;
+      word-break: break-all;
+    }
+
+    .label {
+      font-size: 13px;
+      color: #666;
+      margin-bottom: 5px;
+    }
+
+    .value {
+      background: white;
+      padding: 10px;
+      border-radius: 6px;
+      border: 1px solid #ddd;
+      font-size: 14px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="container">
+    <h1>Create OAuth Client</h1>
+
+    <div class="error" id="errorBox"></div>
+
+    <form id="clientForm">
+      <input
+        type="email"
+        id="email"
+        placeholder="Email Address"
+        required
+      />
+
+      <input
+        type="password"
+        id="password"
+        placeholder="Password"
+        required
+      />
+
+      <input
+        type="text"
+        id="appName"
+        placeholder="Application Name"
+        required
+      />
+
+      <select id="applicationType" required>
+        <option value="">Select Application Type</option>
+        <option value="web_application">Web Application</option>
+        <option value="android_application">Android Application</option>
+        <option value="ios_application">IOS Application</option>
+        <option value="chrome_extension">Chrome Extension</option>
+        <option value="desktop_app">Desktop App</option>
+      </select>
+
+      <input
+        type="text"
+        id="origin"
+        placeholder="Origin"
+        required
+      />
+
+      <input
+        type="text"
+        id="redirectUri"
+        placeholder="Redirect URI"
+        required
+      />
+
+      <button type="submit">Create Client</button>
+    </form>
+
+    <div class="success-box" id="successBox">
+      <h3>OAuth Credentials</h3>
+
+      <div class="credential">
+        <div class="label">Client ID</div>
+        <div class="value" id="clientId"></div>
+      </div>
+
+      <div class="credential">
+        <div class="label">Client Secret</div>
+        <div class="value" id="clientSecret"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const form = document.getElementById("clientForm");
+    const errorBox = document.getElementById("errorBox");
+    const successBox = document.getElementById("successBox");
+
+    const clientId = document.getElementById("clientId");
+    const clientSecret = document.getElementById("clientSecret");
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      errorBox.style.display = "none";
+      successBox.style.display = "none";
+
+      const body = {
+        email: document.getElementById("email").value,
+        password: document.getElementById("password").value,
+        appName: document.getElementById("appName").value,
+        applicationType: document.getElementById("applicationType").value,
+        origin: document.getElementById("origin").value,
+        redirectUri: document.getElementById("redirectUri").value,
+      };
+
+      try {
+        const response = await fetch("/auth/client", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(body),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          errorBox.style.display = "block";
+          errorBox.innerText =
+            data.message || "Something went wrong";
+          return;
+        }
+
+        clientId.innerText = data.client_id;
+        clientSecret.innerText = data.client_secrate;
+
+        successBox.style.display = "block";
+
+      } catch (error) {
+        errorBox.style.display = "block";
+        errorBox.innerText = "Server error. Please try again.";
+      }
+    });
+  </script>
+
+</body>
+</html>
